@@ -1,0 +1,223 @@
+---
+  vpcs:
+    - vpcname: vpc-0c93611c15332e238
+      configurations:
+        - vpccidr: 10.0.0.0/16
+          vpcregion: ap-south-1
+          IGW: yes
+    - vpcname: vpc-034cbde59d2c80e22
+      configurations:
+        - vpccidr: 10.1.0.0/16
+          vpcregion: ap-south-1
+          IGW: yes
+  
+  subnetsapsouth1a:
+    - subnetname: subnet-0c51e735b050c5a01
+      configs:
+        - subcidr: 10.0.5.0/24
+          subaz: ap-south-1a
+          subreg: ap-south-1
+          subvpcid: vpc-0c93611c15332e238
+          subtags: publicsubnet-vpc1
+          sumap_public: yes
+    - subnetname: subnet-005e8a639d29c47c2
+      configs:
+        - subcidr: 10.0.6.0/24
+          subaz: ap-south-1a
+          subreg: ap-south-1
+          subvpcid: vpc-0c93611c15332e238
+          subtags: privatesubnet-vpc1
+          sumap_public: no
+    - subnetname: subnet-0866b4ef84ef26076
+      configs:
+        - subcidr: 10.0.7.0/24
+          subaz: ap-south-1a
+          subreg: ap-south-1
+          subvpcid: vpc-0c93611c15332e238
+          subtags: privatesubnet-vpc1
+          sumap_public: no
+    - subnetname: subnet-04b8a6a0901c3533a
+      configs:
+        - subcidr: 10.1.8.0/24
+          subaz: ap-south-1a
+          subreg: ap-south-1
+          subvpcid: vpc-034cbde59d2c80e22
+          subtags: privatesubnet-vpc2
+          sumap_public: no
+    - subnetname: subnet-0d6d48b3674c3f87d
+      configs:
+        - subcidr: 10.1.9.0/24
+          subaz: ap-south-1a
+          subreg: ap-south-1
+          subvpcid: vpc-034cbde59d2c80e22
+          subtags: publicsubnet-vpc2
+          sumap_public: no
+        
+  subnetsapsouth1b:
+    - subnetname: subnet-050b6a335507e75a5
+      configs:
+        - subcidr: 10.0.10.0/24
+          subaz: ap-south-1b
+          subreg: ap-south-1
+          subvpcid: vpc-0c93611c15332e238
+          subtags: publicsubnet-vpc1
+          sumap_public: yes
+
+    
+  igw_routes:
+    - routename: SUB1-PUBL-VPCA-IGW
+      confs:
+        - igrvpc: vpc-0c93611c15332e238
+          igrregion: ap-south-1
+          igrsubnet: subnet-0c51e735b050c5a01
+          igrgatewayid: igw-04fa3e0005483d368
+    - routename: SUB5-PUBL-VPCA-IGW
+      confs:
+        - igrvpc: vpc-0c93611c15332e238
+          igrregion: ap-south-1
+          igrsubnet: subnet-050b6a335507e75a5
+          igrgatewayid: igw-04fa3e0005483d368
+    - routename: SUB6-PUBL-VPCB-IGW
+      confs:
+        - igrvpc: vpc-034cbde59d2c80e22
+          igrregion: ap-south-1
+          igrsubnet: subnet-0d6d48b3674c3f87d
+          igrgatewayid: igw-010cc62c143277117
+
+
+  # variables for nat gateway to DB subnet subnet-0866b4ef84ef26076
+  natgateways:
+    - natgatewayname: nat-03ea05d1a279ed296
+      configure:
+        - ngsubnet: subnet-0c51e735b050c5a01
+          ngregion: ap-south-1
+    - natgatewayname: nat-0b165843fa9149ae5
+      configure:
+        - ngsubnet: subnet-0d6d48b3674c3f87d
+          ngregion: ap-south-1
+    
+
+  # create route record to vpca main route table and associate subnet subnet-0866b4ef84ef26076
+  ngw_routes:
+    - routename: rtb-06497317de274f532
+      con:
+        - ngrvpc: vpc-0c93611c15332e238
+          ngrvpccidr: 10.0.0.0/16
+          ngrregion: ap-south-1
+          ngrsubnet: subnet-0866b4ef84ef26076
+          ngrgatewayid: nat-03ea05d1a279ed296
+          ngrrouteid: rtb-06497317de274f532
+    - routename: rtb-034cd23168596bac8
+      con:
+        - ngrvpc: vpc-034cbde59d2c80e22
+          ngrvpccidr: 10.1.0.0/16
+          ngrregion: ap-south-1
+          ngrsubnet: subnet-04b8a6a0901c3533a
+          ngrgatewayid: nat-0b165843fa9149ae5
+          ngrrouteid: rtb-034cd23168596bac8
+
+  # create basic subnets that allow public to access web servers in vpc-a and vpc-b
+  create_webserver_sec_groups:
+    - secgrpname: sg-01b2cd5980416b774
+      configurations:
+        - secgrpdesc: sec grp for web servers for vpca
+          secvpcid: vpc-0c93611c15332e238
+          secregion: ap-south-1
+    - secgrpname: sg-0249b35d7e039f0c1
+      configurations:
+        - secgrpdesc: sec grp for web servers for vpcb
+          secvpcid: vpc-034cbde59d2c80e22
+          secregion: ap-south-1
+  # create keyair for ap-south-1 region
+  #createkeypair:
+  #  - kpname: apsouth1keypair1
+  #    cons:
+  #      - kpregion: ap-south-1
+  #  - kpname: apsouth1keypair2
+  #    cons: 
+  #      - kpregion: ap-south-1
+
+  
+  # create instance
+  crt_inst:
+    - instname: i-064a84be2e7e52c02
+      configs:
+        - inskeyname: myprimeadmkeypair
+          instype: t2.micro
+          insimage: ami-0a74bfeb190bd404f
+          insregion: ap-south-1
+          inssecgrp: sg-01b2cd5980416b774
+          instags: INSTANCESUBPUB1VPCA-i-064a84be2e7e52c02
+          inspubiptag: 13.233.114.127/24
+          inspriiptag: 10.0.5.29/24
+          inscount: 1
+          insvpcsubnetid: subnet-0c51e735b050c5a01
+          insasspubip: yes
+    - instname: i-038b1b965aab351e5
+      configs:
+        - inskeyname: myprimeadmkeypair
+          instype: t2.micro
+          insimage: ami-0a74bfeb190bd404f
+          insregion: ap-south-1
+          inssecgrp: sg-01b2cd5980416b774
+          instags: INSTANCESUBPUB1VPCA-i-038b1b965aab351e5
+          inspubiptag: 13.127.36.27/24
+          inspriiptag: 10.0.10.209/24
+          inscount: 1
+          insvpcsubnetid: subnet-050b6a335507e75a5
+          insasspubip: yes
+     
+  # Create sec groups to app servers in vpca private subnets
+  create_appserver_sec_groups:
+    - secgrpname: appinst-vpca
+      configurations:
+        - secgrpdesc: sec grp for app servers for vpca
+          secvpcid: vpc-0c93611c15332e238
+          secregion: ap-south-1
+          sectarget1: 10.0.5.29/24
+          sectarget2: 10.0.10.209/24 
+    
+  # create instance in appserver of subpri2 in vpca
+  crt_inst_app:
+    - instname: INST3-SUBPRI2-VPCA
+      configs:
+        - inskeyname: myprimeadmkeypair
+          instype: t2.micro
+          insimage: ami-0a74bfeb190bd404f
+          insregion: ap-south-1
+          inssecgrp: appinst-vpca
+          instags: INSTANCESUBPRI2VPCA-INST2-SUBPRI2-VPCA
+          inspubiptag: INST3SUBPRI2VPCAPUBLICIP
+          inspriiptag: INST3SUBPRI2VPCAPRIVATEIP
+          inscount: 1
+          insvpcsubnetid: subnet-005e8a639d29c47c2
+          insasspubip: no
+
+  # Create sec groups to DB servers in vpca private subnets
+  create_dbserver_sec_groups:
+    - secgrpname: dbinst-vpca
+      configurations:
+        - secgrpdesc: sec grp for db servers for vpca
+          secvpcid: vpc-0c93611c15332e238
+          secregion: ap-south-1
+          #sectarget1: INST3SUBPRI2VPCAPRIVATEIP
+          sectarget2: 10.0.5.29/32
+          #sectarget3: 10.0.10.209/32
+
+
+  # create instance
+  crt_inst_db:
+    - instname: INST4-SUBPRI3-VPCA
+      configs:
+        - inskeyname: myprimeadmkeypair
+          instype: t2.micro
+          insimage: ami-0a74bfeb190bd404f
+          insregion: ap-south-1
+          inssecgrp: dbinst-vpca
+          instags: INSTANCESUBPRI3VPCA-INST4-SUBPRI3-VPCA
+          inspubiptag: INST4SUBPRI3VPCAPUBLICIP
+          inspriiptag: INST4SUBPRI3VPCAPRIVATEIP
+          inscount: 1
+          insvpcsubnetid: subnet-0866b4ef84ef26076
+          insasspubip: no
+
