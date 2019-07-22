@@ -1,0 +1,24 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<org.jenkinsci.plugins.periodicbackup.PeriodicBackupLink plugin="periodicbackup@1.5">
+  <fileManagerPlugin class="org.jenkinsci.plugins.periodicbackup.FullBackup">
+    <restorePolicy class="org.jenkinsci.plugins.periodicbackup.ReplaceRestorePolicy"/>
+    <baseDir>/var/lib/jenkins</baseDir>
+  </fileManagerPlugin>
+  <locationPlugins>
+    <org.jenkinsci.plugins.periodicbackup.LocalDirectory>
+      <enabled>false</enabled>
+      <path>/var/lib/jenkins/workspace</path>
+    </org.jenkinsci.plugins.periodicbackup.LocalDirectory>
+  </locationPlugins>
+  <storagePlugins>
+    <org.jenkinsci.plugins.periodicbackup.ZipStorage>
+      <multiVolume>false</multiVolume>
+      <volumeSize>3999999999</volumeSize>
+    </org.jenkinsci.plugins.periodicbackup.ZipStorage>
+  </storagePlugins>
+  <backupNow>false</backupNow>
+  <tempDirectory></tempDirectory>
+  <cron></cron>
+  <cycleQuantity>1</cycleQuantity>
+  <cycleDays>2</cycleDays>
+</org.jenkinsci.plugins.periodicbackup.PeriodicBackupLink>
